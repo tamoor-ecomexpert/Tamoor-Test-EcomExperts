@@ -96,6 +96,39 @@ if (!customElements.get('product-form')) {
             if (this.cart && this.cart.classList.contains('is-empty')) this.cart.classList.remove('is-empty');
             if (!this.error) this.submitButton.removeAttribute('aria-disabled');
             this.querySelector('.loading__spinner').classList.add('hidden');
+            const product_addon =this.form.querySelector('[name="addon-product"]');
+            if(product_addon && product_addon.value !="") this.addonProduct(product_addon.value);
+
+          });
+      }
+
+      addonProduct(variantID){
+        fetch(`${routes.cart_url}.js`)
+          .then((response) => response.json())
+          .then((cart) => {
+            const addonProduct = cart.items.find((item) => item.variant_id == variantID);
+            if (!addonProduct) {
+              let formData = {
+                'items': [{
+                 'id': variantID,
+                 'quantity': 1
+                 }]
+               };
+              fetch(`${routes.cart_add_url}`, {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(formData),
+              })
+              .then((response) => response.json())
+              .then((response) => {
+                console.log(response);
+              })
+              .catch((e) => {
+                console.error(e);
+              });
+            }
           });
       }
 

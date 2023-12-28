@@ -60,6 +60,7 @@
           {% endif %}
           class="product-variant-id"
         >
+        <input type="hidden" name="addon-product" value="{{product.selected_or_first_available_variant.metafields.custom.addon_product.value.selected_or_first_available_variant.id}}">
 
         {%- if gift_card_recipient_feature_active -%}
           {%- render 'gift-card-recipient-form', product: product, form: form, section: section -%}
@@ -147,3 +148,36 @@
     <script src="{{ 'pickup-availability.js' | asset_url }}" defer="defer"></script>
   {%- endif -%}
 </div>
+{% comment %} <script>
+  function addToCart(variantId, quantity) {
+    const data = {
+      items: [
+        {
+          id: variantId,
+          quantity: quantity
+        }
+      ]
+    };
+
+    fetch('/cart/add.js', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      },
+      body: JSON.stringify(data)
+    })
+      .then(response => response.json())
+      .then(data => {
+        // Handle success, if needed
+        console.log('Product added to cart:', data);
+         
+        // Uncomment the line below to redirect to the cart page after adding the item
+        // window.location.href = '/cart';
+      })
+      .catch(error => {
+        // Handle error
+        console.error('Error adding product to cart:', error);
+      });
+  }
+</script> {% endcomment %}
