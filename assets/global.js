@@ -1105,6 +1105,12 @@ class VariantSelects extends HTMLElement {
           `Price-Per-Item-${this.dataset.originalSection ? this.dataset.originalSection : this.dataset.section}`
         );
 
+        //check the input value of addon product and update it with the metafield value of corresponding variant product.
+        const product_addon = html.querySelector('input[name="addon-product"');
+        const product_addon_update = document.querySelector('input[name="addon-product"');
+        if(product_addon_update) product_addon_update.value = product_addon?.value || "";
+
+
         const volumePricingDestination = document.getElementById(`Volume-${this.dataset.section}`);
         const qtyRules = document.getElementById(`Quantity-Rules-${this.dataset.section}`);
         const volumeNote = document.getElementById(`Volume-Note-${this.dataset.section}`);
@@ -1137,8 +1143,8 @@ class VariantSelects extends HTMLElement {
 
         const addButtonUpdated = html.getElementById(`ProductSubmitButton-${sectionId}`);
         this.toggleAddButton(
-          addButtonUpdated ? addButtonUpdated.hasAttribute('disabled') : true,
-          window.variantStrings.soldOut
+           addButtonUpdated ? addButtonUpdated.hasAttribute('disabled') : true,
+           window.variantStrings.soldOut
         );
 
         publish(PUB_SUB_EVENTS.variantChange, {

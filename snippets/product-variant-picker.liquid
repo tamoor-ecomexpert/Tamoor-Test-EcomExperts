@@ -9,6 +9,16 @@
   Usage:
   {% render 'product-variant-picker', product: product, block: block, product_form_id: product_form_id %}
 {% endcomment %}
+<style>
+  .non_color_pills{
+    display:none;
+  }
+  .product-form__input input[type='radio']:checked + label {
+    background-color: black;
+    color: black;
+    border: 2px solid black;
+}
+</style>
 {%- unless product.has_only_default_variant -%}
   {%- if block.settings.picker_type == 'button' -%}
     <variant-radios
@@ -24,8 +34,45 @@
       {%- for option in product.options_with_values -%}
         <fieldset class="js product-form__input">
           <legend class="form__label">{{ option.name }}</legend>
-          {% render 'product-variant-options', product: product, option: option, block: block %}
+          {% render 'product-variant-options', product: product, option: option, block: block, variant_type: 'button' %}
         </fieldset>
+      {%- endfor -%}
+      <script type="application/json">
+        {{ product.variants | json }}
+      </script>
+    </variant-radios>
+    {%- elsif block.settings.picker_type == 'button-dropdown' -%}
+    <variant-radios
+      id="variant-radios-{{ section.id }}"
+      class="no-js-hidden"
+      data-section="{{ section.id }}"
+      data-url="{{ product.url }}"
+      {% if update_url == false %}
+        data-update-url="false"
+      {% endif %}
+      {{ block.shopify_attributes }}
+    >
+      {%- for option in product.options_with_values -%}
+        <fieldset class="js product-form__input {% if option.name != 'Color' %}non_color_pills noncolor_option_{{ option.name | handle }}{% endif %}">
+          <legend class="form__label">{{ option.name }}</legend>
+          {% render 'product-variant-options', product: product, option: option, block: block, variant_type: 'button' %}
+        </fieldset>
+      {% if option.name != 'Color' %}
+        <div class="product-form__input">
+          <label class="form__label" for="Option-{{ section.id }}-{{ forloop.index0 }}">
+            {{ option.name }}
+          </label>
+        <div class="select">
+          <select class="select__select non_color_dropdown" data-option="noncolor_option_{{ option.name |handle }}">
+        <option value="Unselected">Unselected</option>
+            {%- for value in option.values -%}
+              <option value="{{ value | escape }}">
+      {% if option_disabled -%}{{- 'products.product.value_unavailable' | t: option_value: value -}}{%- else -%}{{- value -}}{%- endif %}</option>
+            {%- endfor -%}
+          </select>
+        </div>
+        </div>
+        {% endif %}
       {%- endfor -%}
       <script type="application/json">
         {{ product.variants | json }}
@@ -54,7 +101,7 @@
               name="options[{{ option.name | escape }}]"
               form="{{ product_form_id }}"
             >
-              {% render 'product-variant-options', product: product, option: option, block: block %}
+              {% render 'product-variant-options', product: product, option: option, block: block, variant_type: 'dropdown' %}
             </select>
             {% render 'icon-caret' %}
           </div>
@@ -120,3 +167,40 @@
     </div>
   </div>
 </noscript>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  var dropdowns = document.querySelectorAll('.non_color_dropdown');
+  var submitButton = document.querySelector('.product-form__submit');
+  function updateSubmitButtonState() {
+    var disableButton = Array.from(dropdowns).some(function (dropdown) {
+      return dropdown.value === 'Unselected';
+    });
+    submitButton.disabled = disableButton;
+  }
+  dropdowns.forEach(function (dropdown) {
+    dropdown.addEventListener('change', function () {
+      updateSubmitButtonState();
+    });
+  });
+
+  updateSubmitButtonState();
+});
+
+  document.addEventListener('DOMContentLoaded', function () {
+  var dropdown = document.querySelector('.non_color_dropdown');
+  
+
+  dropdown.addEventListener('change', function () {
+    var dataTarget = dropdown.getAttribute('data-option');
+    var findthis = '.'+dataTarget+' input[type="radio"]';
+    var radioGroup = document.querySelectorAll(findthis);
+    var selectedValue = dropdown.value;
+    radioGroup.forEach(function (radio) {
+      if (radio.value === selectedValue) {
+        radio.checked = true;
+      }
+    });
+  });
+});
+
+</script>
